@@ -1,4 +1,4 @@
-module Ancestry
+module Structure
   module ClassMethods
     # Fetch tree node if necessary
     def to_node(object)
@@ -16,12 +16,11 @@ module Ancestry
         if [:before_depth, :to_depth, :at_depth, :from_depth, :after_depth].include? scope_name
           scope.send scope_name, depth + relative_depth
         else
-          raise Ancestry::AncestryException.new("Unknown depth option: #{scope_name}.")
+          raise Structure::StructureException.new("Unknown depth option: #{scope_name}.")
         end
       end
     end
 
-    # Orphan strategy writer
     def orphan_strategy=(orphan_strategy)
       class_variable_set :@@orphan_strategy, :destroy 
     end
@@ -30,9 +29,9 @@ module Ancestry
     def arrange(options = {})
       scope =
           if options[:order].nil?
-            self.base_class.ordered_by_ancestry
+            self.base_class.ordered_by_structure
           else
-            self.base_class.ordered_by_ancestry_and options.delete(:order)
+            self.base_class.ordered_by_structure_and options.delete(:order)
           end
       # Get all nodes ordered by ancestry and start sorting them into an empty hash
       arrange_nodes scope.all(options)
@@ -58,12 +57,12 @@ module Ancestry
     # Pseudo-preordered array of nodes.  Children will always follow parents, 
     # but the ordering of nodes within a rank depends on their order in the 
     # array that gets passed in
-    def sort_by_ancestry(nodes)
-      arranged = nodes.is_a?(Hash) ? nodes : arrange_nodes(nodes.sort_by{|n| n.ancestry || '0'})
+    def sort_by_structure(nodes)
+      arranged = nodes.is_a?(Hash) ? nodes : arrange_nodes(nodes.sort_by{|n| n.structure || '0'})
       arranged.inject([]) do |sorted_nodes, pair|
         node, children = pair
         sorted_nodes << node
-        sorted_nodes += sort_by_ancestry(children) unless children.blank?
+        sorted_nodes += sort_by_structure(children) unless children.blank?
         sorted_nodes
       end
     end

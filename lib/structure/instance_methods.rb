@@ -1,26 +1,26 @@
-module Ancestry
+module Structure
   module InstanceMethods
-    # Validate that the ancestors don't include itself
-    def ancestry_exclude_self
+    # Validate that the structure don't include itself
+    def structure_exclude_self
       errors.add(:base, "#{self.class.name.humanize} cannot be a descendant of itself.") if ancestor_ids.include? self.id
     end
 
-    # Update descendants with new ancestry
-    def update_descendants_with_new_ancestry
+    # Update descendants with new structure
+    def update_descendants_with_new_structure
       # Skip this if callbacks are disabled
-      unless ancestry_callbacks_disabled?
-        # If node is not a new record and ancestry was updated and the new ancestry is sane ...
-        if changed.include?(self.base_class.ancestry_column.to_s) && !new_record? && sane_ancestry?
+      unless structure_callbacks_disabled?
+        # If node is not a new record and structure was updated and the new structure is sane ...
+        if changed.include?(self.base_class.structure_column.to_s) && !new_record? && sane_structure?
           # ... for each descendant ...
           unscoped_descendants.each do |descendant|
             # ... replace old ancestry with new ancestry
-            descendant.without_ancestry_callbacks do
-              column = self.class.ancestry_column
+            descendant.without_structure_callbacks do
+              column = self.class.structure_column
               v = read_attribute(column)
               descendant.update_attribute(
                   column,
-                  descendant.read_attribute(descendant.class.ancestry_column).gsub(
-                      /^#{self.child_ancestry}/,
+                  descendant.read_attribute(descendant.class.structure_column).gsub(
+                      /^#{self.child_structure}/,
                       if v.blank? then
                         id.to_s
                       else
@@ -37,13 +37,13 @@ module Ancestry
     # Apply orphan strategy
     def apply_orphan_strategy
       # Skip this if callbacks are disabled
-      unless ancestry_callbacks_disabled?
+      unless structure_callbacks_disabled?
         # If this isn't a new record ...
         unless new_record?
           # ...destroy all descendants if orphan strategy is destroy
           if self.base_class.orphan_strategy == :destroy
             unscoped_descendants.each do |descendant|
-              descendant.without_ancestry_callbacks do
+              descendant.without_structure_callbacks do
                 descendant.destroy
               end
             end
@@ -52,18 +52,18 @@ module Ancestry
       end
     end
 
-    # The ancestry value for this record's children
-    def child_ancestry
+    # The structure value for this record's children
+    def child_structure
       # New records cannot have children
-      raise Ancestry::AncestryException.new('No child ancestry for new record. Save record before performing tree operations.') if new_record?
-      v = "#{self.send "#{self.base_class.ancestry_column}_was"}"
+      raise Structure::StructureException.new('No child structure for new record. Save record before performing tree operations.') if new_record?
+      v = "#{self.send "#{self.base_class.structure_column}_was"}"
       return id.to_s if v.blank?
       v.split(',').map{|x| x + '/' + id.to_s}.join(',')
     end
 
     # Ancestors = all nodes above but NOT including the current ID
     def ancestor_ids
-      read_attribute(self.base_class.ancestry_column).to_s.split(%r|[,/]|).uniq.map { |id| cast_primary_key(id) }
+      read_attribute(self.base_class.structure_column).to_s.split(%r|[,/]|).uniq.map { |id| cast_primary_key(id) }
     end
 
     def ancestor_conditions
@@ -101,7 +101,7 @@ module Ancestry
     end
 
     def depth
-      ancestor_ids.size # this is probably incorrect as it just counts the ancestors without regard to how layered
+      ancestor_ids.size # this is probably incorrect as it just counts the structure without regard to how layered
     end
 
     def cache_depth
@@ -110,7 +110,7 @@ module Ancestry
 
     # Parent
     def parent=(parent)
-      write_attribute(self.base_class.ancestry_column, if parent.blank? then
+      write_attribute(self.base_class.structure_column, if parent.blank? then
                                                          nil
                                                        else
                                                          parent.child_ancestry
@@ -130,7 +130,7 @@ module Ancestry
       if ancestor_ids.empty? then
         nil
       else
-        read_attribute(self.base_class.ancestry_column).to_s.split(',')
+        read_attribute(self.base_class.structure_column).to_s.split(',')
       end
     end
 
@@ -173,13 +173,13 @@ module Ancestry
     end
 
     def is_root?
-      read_attribute(self.base_class.ancestry_column).blank?
+      read_attribute(self.base_class.structure_column).blank?
     end
 
 
     # Descendants = all the nodes below and NOT including the current node
     def descendant_conditions
-      column = "#{self.base_class.table_name}.#{self.base_class.ancestry_column}"
+      column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
       lookup = if has_parent? then
                  "%/#{id}"
                else
@@ -202,7 +202,7 @@ module Ancestry
 
     # Subtree = all nodes below the current node INCLUDING the current node in the list
     def subtree_conditions
-      column = "#{self.base_class.table_name}.#{self.base_class.ancestry_column}"
+      column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
       lookup = if has_parent? then
                  "%/#{id}"
                else
@@ -225,14 +225,14 @@ module Ancestry
     end
 
     # Callback disabling
-    def without_ancestry_callbacks
-      @disable_ancestry_callbacks = true
+    def without_structure_callbacks
+      @disable_structure_callbacks = true
       yield
-      @disable_ancestry_callbacks = false
+      @disable_structure_callbacks = false
     end
 
-    def ancestry_callbacks_disabled?
-      !!@disable_ancestry_callbacks
+    def structure_callbacks_disabled?
+      !!@disable_structure_callbacks
     end
 
     private
@@ -259,10 +259,10 @@ module Ancestry
       end
     end
 
-    # basically validates the ancestry, but also applied if validation is
+    # basically validates the structure but also applied if validation is
     # bypassed to determine if children should be affected
-    def sane_ancestry?
-      ancestry.nil? || (ancestry.to_s =~ Ancestry::ANCESTRY_PATTERN && !ancestor_ids.include?(self.id))
+    def sane_structure?
+      structure.nil? || (structure.to_s =~ Structure::STRUCTURE_PATTERN && !ancestor_ids.include?(self.id))
     end
 
     def unscoped_find(id)

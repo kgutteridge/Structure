@@ -1,7 +1,7 @@
-module Ancestry
-  class AncestryException < RuntimeError
+module Structure
+  class StructureException < RuntimeError
   end
 
-  class AncestryIntegrityException < AncestryException
+  class StructureIntegrityException < StructureException
   end
 end
