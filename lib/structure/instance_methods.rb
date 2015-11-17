@@ -117,6 +117,17 @@ module Structure
                                                        end)
     end
 
+    def parents=(new_parents)
+       ancestry = if new_parents.nil?
+                    nil
+                  else
+                    (new_parents.collect { |x| (self.base_class.find(x).child_structure.split("/") - [self.id.to_s]).join("/") }).join(",")
+                  end
+                  
+       write_attribute(self.base_class.structure_column, structure)
+    end
+
+
     def parent_id=(parent_id)
       self.parent = if parent_id.blank? then
                       nil
