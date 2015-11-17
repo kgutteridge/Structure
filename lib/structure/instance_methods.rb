@@ -113,7 +113,7 @@ module Structure
       write_attribute(self.base_class.structure_column, if parent.blank? then
                                                          nil
                                                        else
-                                                         parent.child_ancestry
+                                                         parent.child_structure
                                                        end)
     end
 
