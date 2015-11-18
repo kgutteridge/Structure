@@ -150,7 +150,7 @@ module Structure
       if ancestor_ids.empty? then
         nil
       else
-        branches.map { |branch| cast_primary_key(branch.split('/').last) }
+        branches.map { |branch| cast_primary_key(branch.split('/').last) }.uniq
       end
     end
 
