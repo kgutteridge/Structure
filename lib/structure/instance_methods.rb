@@ -118,10 +118,10 @@ module Structure
     end
 
     def parents=(new_parents)
-       ancestry = if new_parents.nil?
+       structure = if new_parents.nil?
                     nil
                   else
-                    (new_parents.collect { |x| (self.base_class.find(x).child_structure.split("/") - [self.id.to_s]).join("/") }).join(",")
+                    (new_parents.collect { |x| (self.base_class.find(x.id).child_structure.split("/") - [self.id.to_s]).join("/") }).join(",")
                   end
                   
        write_attribute(self.base_class.structure_column, structure)
