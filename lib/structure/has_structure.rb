@@ -47,7 +47,7 @@ class << ActiveRecord::Base
     before_destroy :apply_orphan_strategy
 
     # Create structure column accessor and set to option or default
-    if options[:cache_depth]
+    #if options[:cache_depth]
       # Create accessor for column name and set to option or default
       self.cattr_accessor :depth_cache_column
       self.depth_cache_column = options[:depth_cache_column] || :structure_depth
@@ -57,7 +57,7 @@ class << ActiveRecord::Base
 
       # Validate depth column
       validates_numericality_of depth_cache_column, :greater_than_or_equal_to => 0, :only_integer => true, :allow_nil => false
-    end
+    #end
 
     
   end

@@ -2,7 +2,7 @@ module Structure
   module InstanceMethods
     # Validate that the structure don't include itself
     def structure_exclude_self
-      errors.add(:base, "#{self.class.name.humanize} cannot be a descendant of itself.") if ancestor_ids.include? self.id
+      errors.add(:base, "#{self.class.name.humanize} cannot be a descendant of itself.") if ancestor_ids.include? self.internal_id
     end
 
     # Update descendants with new structure
@@ -22,9 +22,9 @@ module Structure
                   descendant.read_attribute(descendant.class.structure_column).gsub(
                       /^#{self.child_structure}/,
                       if v.blank? then
-                        id.to_s
+                        internal_id.to_s
                       else
-                        "#{v}/#{id}"
+                        "#{v}/#{internal_id}"
                       end
                   )
               )
@@ -57,13 +57,13 @@ module Structure
       # New records cannot have children
       raise Structure::StructureException.new('No child structure for new record. Save record before performing tree operations.') if new_record?
       v = "#{self.send "#{self.base_class.structure_column}_was"}"
-      return id.to_s if v.blank?
-      v.split(',').map{|x| x + '/' + id.to_s}.join(',')
+      return internal_id.to_s if v.blank?
+      v.split(',').map{|x| x + '/' + internal_id.to_s}.join(',')
     end
 
     # Ancestors = all nodes above but NOT including the current ID
     def ancestor_ids
-      read_attribute(self.base_class.structure_column).to_s.split(%r|[,/]|).uniq.map { |id| cast_primary_key(id) }
+      read_attribute(self.base_class.structure_column).to_s.split(%r|[,/]|).uniq.map { |internal_id| cast_primary_key(internal_id) }
     end
 
     def ancestor_conditions
@@ -76,7 +76,7 @@ module Structure
 
     # Path = all nodes above and INCLUDING the current node
     def path_ids
-      ancestor_ids + [id]
+      ancestor_ids + [internal_id]
     end
 
     def path_conditions
@@ -121,7 +121,7 @@ module Structure
        structure = if new_parents.nil?
                     nil
                   else
-                    (new_parents.collect { |x| (self.base_class.find(x.id).child_structure.split("/") - [self.id.to_s]).join("/") }).join(",")
+                    (new_parents.collect { |x| (self.base_class.find(x.internal_id).child_structure.split("/") - [self.internal_id.to_s]).join("/") }).join(",")
                   end
                   
        write_attribute(self.base_class.structure_column, structure)
@@ -176,7 +176,7 @@ module Structure
     end
 
     def root
-      if root_id == id then
+      if root_id == internal_id then
         self
       else
         unscoped_find(root_id)
@@ -192,15 +192,15 @@ module Structure
     def descendant_conditions
       column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
       lookup = if has_parent? then
-                 "%/#{id}"
+                 "%/#{internal_id}"
                else
-                 "#{id}"
+                 "#{internal_id}"
                end
       ["#{column} like ?
         or #{column} like ?
         or #{column} like ?
         or #{column} like ?
-        or #{column} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{id}", "#{id}"]
+        or #{column} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{internal_id}", "#{internal_id}"]
     end
 
     def descendants(depth_options = {})
@@ -215,16 +215,16 @@ module Structure
     def subtree_conditions
       column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
       lookup = if has_parent? then
-                 "%/#{id}"
+                 "%/#{internal_id}"
                else
-                 "#{id}"
+                 "#{internal_id}"
                end
       ["#{column} like ?
         or #{column} like ?
         or #{column} like ?
         or #{column} like ?
         or #{column} = ?
-        or #{self.base_class.table_name}.#{self.base_class.primary_key} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{id}", "#{id}", "#{id}"]
+        or #{self.base_class.table_name}.#{self.base_class.primary_key} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{internal_id}", "#{internal_id}", "#{internal_id}"]
     end
 
     def subtree(depth_options = {})
@@ -273,11 +273,11 @@ module Structure
     # basically validates the structure but also applied if validation is
     # bypassed to determine if children should be affected
     def sane_structure?
-      structure.nil? || (structure.to_s =~ Structure::STRUCTURE_PATTERN && !ancestor_ids.include?(self.id))
+      structure.nil? || (structure.to_s =~ Structure::STRUCTURE_PATTERN && !ancestor_ids.include?(self.internal_id))
     end
 
-    def unscoped_find(id)
-      self.base_class.unscoped { self.base_class.find(id) }
+    def unscoped_find(internal_id)
+      self.base_class.unscoped { self.base_class.find(internal_id) }
     end
   end
 end
