@@ -198,7 +198,8 @@ module Structure
                end
       ["#{column} like ?
         or #{column} like ?
-        or #{column} = ?", "#{lookup},%", ",#{id}", "#{id}"]
+        or #{column} like ?
+        or #{column} = ?","#{lookup}%", "#{lookup},%", ",#{id}", "#{id}"]
     end
     
     def children(depth_options = {})
