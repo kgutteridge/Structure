@@ -202,11 +202,11 @@ module Structure
     end
     
     def children(depth_options = {})
-      self.base_class.scope_depth(depth_options, depth).where(descendant_conditions)
+      self.base_class.scope_depth(depth_options, depth).where(children_conditions)
     end
 
     def children_ids(depth_options = {})
-      id_selector(descendants(depth_options))
+      id_selector(children(depth_options))
     end
 
 
