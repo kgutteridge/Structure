@@ -186,6 +186,28 @@ module Structure
     def is_root?
       read_attribute(self.base_class.structure_column).blank?
     end
+    
+    
+    # Children
+    def children_conditions
+      column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
+      lookup = if has_parent? then
+                 "%/#{id}"
+               else
+                 "#{id}"
+               end
+      ["#{column} like ?
+        or #{column} like ?
+        or #{column} = ?", "#{lookup},%", ",#{id}", "#{id}"]
+    end
+    
+    def children(depth_options = {})
+      self.base_class.scope_depth(depth_options, depth).where(descendant_conditions)
+    end
+
+    def children_ids(depth_options = {})
+      id_selector(descendants(depth_options))
+    end
 
 
     # Descendants = all the nodes below and NOT including the current node
