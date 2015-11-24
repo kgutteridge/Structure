@@ -148,7 +148,7 @@ module Structure
     # the immediate node ids of the parents of the current node
     def parent_ids
       if ancestor_ids.empty? then
-        nil
+        []
       else
         branches.map { |branch| cast_primary_key(branch.split('/').last) }.uniq
       end
@@ -156,7 +156,7 @@ module Structure
 
     def parents
       if is_root? then
-        nil
+        []
       else
         unscoped_find(parent_ids)
       end
