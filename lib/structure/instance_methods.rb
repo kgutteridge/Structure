@@ -210,19 +210,30 @@ module Structure
 
 
     # Descendants = all the nodes below and NOT including the current node
-    def descendant_conditions
-      column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
-      lookup = if has_parent? then
-                 "%/#{id}"
-               else
-                 "#{id}"
-               end
-      ["#{column} like ?
-        or #{column} like ?
-        or #{column} like ?
-        or #{column} like ?
-        or #{column} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{id}", "#{id}"]
-    end
+    # def descendant_conditions
+    #    column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
+    #    lookup = if has_parent? then
+    #               "%/#{id}"
+    #             else
+    #               "#{id}"
+    #             end
+    #    ["#{column} like ?
+    #      or #{column} like ?
+    #      or #{column} like ?
+    #      or #{column} like ?
+    #      or #{column} = ?", "#{lookup}", "#{lookup}/%", "#{lookup},%", ",#{id}", "#{id}"]
+    #  end
+    
+    
+     def descendant_conditions
+        column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
+        ["#{column} like ?
+          or #{column} like ?
+          or #{column} like ?
+          or #{column} like ?
+          or #{column} = ?", "%#{id}", "#{id}%", "%#{id}%", "#{id}"]
+      end
+    
 
     def descendants(depth_options = {})
       self.base_class.scope_depth(depth_options, depth).where(descendant_conditions)
