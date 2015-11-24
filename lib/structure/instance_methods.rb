@@ -230,8 +230,7 @@ module Structure
         ["#{column} like ?
           or #{column} like ?
           or #{column} like ?
-          or #{column} like ?
-          or #{column} = ?", "%#{id}", "#{id}%", "%#{id}%", "#{id}"]
+          or #{column} like ?", "%#{id}", "#{id}%", "%#{id}%", "#{id}"]
       end
     
 
