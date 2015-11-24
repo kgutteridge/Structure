@@ -171,7 +171,7 @@ module Structure
       if ancestor_ids.empty? then
         id
       else
-        branches.first.split('/').first
+        branches.first.split('/').first.to_i
       end
     end
 
