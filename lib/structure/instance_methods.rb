@@ -200,7 +200,7 @@ module Structure
         or #{column} like ?
         or #{column} like ?
         or #{column} like ?
-        or #{column} = ?","#{lookup}", "#{lookup},%/","/%,#{id}/", ",#{id}", "#{id}"]
+        or #{column} = ?","#{lookup}", "#{lookup},%/","%/%,#{id}/", ",#{id}", "#{id}"]
     end
     
     def children(depth_options = {})
