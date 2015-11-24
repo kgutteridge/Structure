@@ -191,17 +191,12 @@ module Structure
     # Children
     def children_conditions
       column = "#{self.base_class.table_name}.#{self.base_class.structure_column}"
-      lookup = if has_parent? then
-                 "%/#{id}"
-               else
-                 "#{id}"
-               end
+
       ["#{column} like ?
         or #{column} like ?
         or #{column} like ?
         or #{column} like ?
-        or #{column} like ?
-        or #{column} = ?","#{lookup}", "%/#{lookup},%/%","%/%,#{id}/%", ",#{id}","#{id},", "#{id}"]
+        or #{column} like ?","#{id}", "%/#{id}","%/#{id},","%,#{id},",",#{id}"]
     end
     
     def children(depth_options = {})
