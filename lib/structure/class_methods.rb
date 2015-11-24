@@ -66,8 +66,5 @@ module Structure
         sorted_nodes
       end
     end
- 
-    
-    
   end
 end
