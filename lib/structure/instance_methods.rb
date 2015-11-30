@@ -12,7 +12,7 @@ module Structure
         # If node is not a new record and structure was updated and the new structure is sane ...
         if changed.include?(self.base_class.structure_column.to_s) && !new_record? && sane_structure?
           # ... for each descendant ...
-          unscoped_descendants.each do |descendant|
+          unscoped_descendants.sort.each do |descendant|
             # ... replace old ancestry with new ancestry
             descendant.without_structure_callbacks do
               column = self.class.structure_column
