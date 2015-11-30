@@ -274,8 +274,7 @@ module Structure
     end
 
     def structure_callbacks_disabled?
-      true
-      #!!@disable_structure_callbacks
+      !!@disable_structure_callbacks
     end
 
     private
